@@ -9,60 +9,86 @@ const taskInput = document.querySelector('#task');
 loadEventlisteners();
 
 function loadEventlisteners() {
-    //submit form
+    // Load Tasks from local storage
+    document.addEventListener('DOMContentLoaded', loadTasks);
+    // Submit form
     form.addEventListener('submit', addTask);
-    //Remove task
+    // Remove task
     taskList.addEventListener('click', removeTask);
-    //Clear task event
+    // Clear task event
     clearBtn.addEventListener('click', clearTasks);
-
-    //Filter tasks event
-
+    // Filter tasks event
     filter.addEventListener('keyup', filterTasks);
 }
 
 //Add Task
 function addTask(e) {
-    if (taskInput.value == -'') {
+    if (taskInput.value === '') {
         alert('Add a task');
     }
-    //create li element
+    // Create li element
     const li = document.createElement('li');
-    //add class
+    // Add class
     li.className = 'collection-item';
-    //Create text node and appernd to li
+    // Create text node and appernd to li
     li.appendChild(document.createTextNode(taskInput.value));
-    //Create new link element
+    // Create new link element
     const link = document.createElement('a');
-    //add class
+    // Add class
     link.className = 'delete-item secondary-content';
-    //add icon html
+    // Add icon html
     link.innerHTML = '<i class="fa fa-remove"></i>';
-    //Append the link to li
+    // Append the link to li
     li.appendChild(link);
-    //Append li to ul
+    // Append li to ul
     taskList.appendChild(li);
-
-    //Clear input
+    // Store to local Storage
+    storeTaskInLocalStorage(taskInput.value);
+    // Clear input
     taskInput.value = '';
+
     e.preventDefault();
 }
+// Store Tasks to LS
+function storeTaskInLocalStorage(task) {
+    let tasks;
+    if (!localStorage.getItem('tasks')) {
+        tasks = [];
+    } else {
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+    }
+    tasks.push(task);
 
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Remove Task
 function removeTask(e) {
     if (e.target.parentElement.classList.contains('delete-item')) {
         if (confirm('Are You Sure?')) {
             e.target.parentElement.parentElement.remove();
+            removeFromLocalStorage(e.target);
         }
 
     }
 }
+// Remove from local storage
+function removeFromLocalStorage(task) {
+    let tasks;
+    if (localStorage.getItem('tasks')) {
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+        tasks.forEach(function(element, index) {
+            if (element !== task.textContent) {
+                tasks.splice(index, 1)
+            }
 
-function clearTasks() {
-    while (taskList.firstChild) {
-        taskList.removeChild(taskList.firstChild)
+        });;
+        localStorage.setItem('tasks', JSON.stringify(tasks));
     }
 }
 
+
+// Filter Tasks
 function filterTasks(e) {
     const text = e.target.value.toLowerCase();
     document.querySelectorAll('.collection-item').forEach(function(task) {
@@ -75,4 +101,46 @@ function filterTasks(e) {
         }
     });
 
+}
+// Load Tasks
+
+function loadTasks(e) {
+    let tasks;
+    if (!localStorage.getItem('tasks')) {
+        tasks = [];
+    } else {
+        tasks = JSON.parse(localStorage.getItem('tasks'));
+    }
+    tasks.forEach(task => {
+        console.log('in');
+        // Create li element
+        const li = document.createElement('li');
+        // Add class
+        li.className = 'collection-item';
+        // Create text node and appernd to li
+        li.appendChild(document.createTextNode(task));
+        // Create new link element
+        const link = document.createElement('a');
+        // Add class
+        link.className = 'delete-item secondary-content';
+        // Add icon html
+        link.innerHTML = '<i class="fa fa-remove"></i>';
+        // Append the link to li
+        li.appendChild(link);
+        // Append li to ul
+        taskList.appendChild(li);
+    });
+}
+
+// Clear Tasks
+function clearTasks() {
+    while (taskList.firstChild) {
+        taskList.removeChild(taskList.firstChild)
+    }
+    // Clear tasks from local storage
+    clearTasksFromLocalStorage();
+}
+// Clear tasks from local storage
+clearTasksFromLocalStorage() {
+    localStorage.clear();
 }
